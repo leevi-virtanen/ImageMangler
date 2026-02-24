@@ -1,5 +1,3 @@
-ImageMangler**Leevi Virtanen**
-
 **Description**
 
 ImageMangler is an image processing program. Its purpose is to offer artists a fast and computer-light way to process images in unique ways. It is good for producing album covers and textures, among other things. An average person could use it, for example, for making artistic photo collages.
