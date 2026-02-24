@@ -1,6 +1,6 @@
 **Description**
 
-ImageMangler is an image processing program. Its purpose is to offer artists a fast and computer-light way to process images in unique ways. It is good for producing album covers and textures, among other things. An average person could use it, for example, for making artistic photo collages.
+ImageMangler is an image processing program. It's purpose is to offer artists a fast and computer-light way to process images in unique ways. It is good for producing album covers and textures, among other things. An average person could use it, for example, for making artistic photo collages.
 
 ImageMangler utilizes boolean algebra and bit shifting for image processing. The formation of artifacts resulting from bit shifting offers a new way to change the image's brightness more unevenly and artistically. The main feature of the program, however, is the unusual processing of image color values with their comparisons and other mathematical operations.
 
