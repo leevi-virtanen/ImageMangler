@@ -19,8 +19,11 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+
+import static java.lang.Double.isNaN;
 
 public class ImageMangler extends Application {
     private Image img;
@@ -46,10 +49,11 @@ public class ImageMangler extends Application {
 
 
     saveFile save;
-
     //Kuvan koko. Kaikki kuvat uudelleen määritellään tähän kokoon
     private int canvasSizeX = 512;
     private int canvasSizeY = 512;
+
+    double ratio = 1;
 
     public int getCanvasSizeX() {
         return canvasSizeX;
@@ -57,6 +61,7 @@ public class ImageMangler extends Application {
 
     public void setCanvasSizeX(int canvasSizeX) {
         this.canvasSizeX = canvasSizeX;
+        save.setCanvasX(this.canvasSizeX);
     }
 
     public int getCanvasSizeY() {
@@ -65,13 +70,19 @@ public class ImageMangler extends Application {
 
     public void setCanvasSizeY(int canvasSizeY) {
         this.canvasSizeY = canvasSizeY;
+        save.setCanvasY(this.canvasSizeY);
     }
+
+    javafx.scene.control.TextField FieldX = new javafx.scene.control.TextField();
+    javafx.scene.control.TextField FieldY = new javafx.scene.control.TextField();
 
     //Eventhandlereiden funktioista erikseen tietoa niiden käyttämissä luokissa.
     //Näissä pääasiassa tiedostojen lataamista ja funktioita muista luokista.
-    public EventHandler<ActionEvent> importImg(VBox box){
+    public EventHandler<ActionEvent> importImg(VBox box, VBox box2){
         if(save.getDefaultDir() != null){
             box.setVisible(true);
+            box2.getChildren().setAll();
+            box2.setVisible(false);
             System.out.println("ImportStart");
             try{
                 bufimg = ImageTool.resize(ImageTool.pickImage(save.getDefaultDir()),canvasSizeX,canvasSizeY);
@@ -82,6 +93,8 @@ public class ImageMangler extends Application {
             }
         } else{
             box.setVisible(true);
+            box2.getChildren().setAll();
+            box2.setVisible(false);
             System.out.println("ImportStart");
             try{
                 bufimg = ImageTool.resize(ImageTool.pickImage(),canvasSizeX,canvasSizeY);
@@ -224,6 +237,24 @@ public class ImageMangler extends Application {
         return null;
     }
 
+    public EventHandler<ActionEvent> canvassize(){
+        if(FieldX.getText() != null && !FieldX.getText().isEmpty()){
+            setCanvasSizeX(Integer.parseInt(FieldX.getText()));
+        } else{
+            return null;
+        }
+        if(FieldY.getText() != null && !FieldY.getText().isEmpty()){
+            setCanvasSizeY(Integer.parseInt(FieldY.getText()));
+        } else{
+            return null;
+        }
+
+        ratio = (double) getCanvasSizeX() /getCanvasSizeY();
+
+        mainview.setFitWidth(512*ratio);
+        return null;
+    }
+
 
 
 
@@ -237,6 +268,18 @@ public class ImageMangler extends Application {
         HBox bitwise = new HBox(3);
         BotButtons.setAlignment(Pos.CENTER_RIGHT);
         Right.setAlignment(Pos.CENTER_RIGHT);
+
+        VBox canvasboxmain = new VBox(10);
+        HBox canvasbox = new HBox(10);
+        Button canvasapplybutton = new Button("Apply");
+        canvasapplybutton.setPrefSize(50,25);
+        canvasbox.getChildren().setAll(new Text("X: "),FieldX,new Text("Y: "), FieldY);
+        canvasboxmain.getChildren().setAll(new Text("Canvas Size"),canvasbox,canvasapplybutton);
+        canvasboxmain.setAlignment(Pos.CENTER_RIGHT);
+
+        canvasapplybutton.setOnAction(e -> canvassize());
+        canvasbox.setAlignment(Pos.CENTER_RIGHT);
+
         mainbox.setPadding(new Insets(50,50,50,50));
         pixel = new PixelProcessor();
 
@@ -244,13 +287,19 @@ public class ImageMangler extends Application {
             File savefile = new File("ImgMng.mangle");
             save = FileTool.readSave(savefile);
             save.updateSaveDate();
+            canvasSizeX = save.getCanvasX();
+            canvasSizeY = save.getCanvasY();
             FileTool.writeSave(save);
         } catch (Exception e){
             save = new saveFile(FileTool.pickDirectory());
         }
+        FieldX.setText(Integer.toString(getCanvasSizeX()));
+        FieldY.setText(Integer.toString(getCanvasSizeY()));
 
 
+        ratio = (double) getCanvasSizeX() /getCanvasSizeY();
 
+        mainview.setFitWidth(512*ratio);
         VBox controls = new VBox(10);
         TopButtons.setAlignment(Pos.CENTER_RIGHT);
         controls.setVisible(false);
@@ -271,7 +320,7 @@ public class ImageMangler extends Application {
         //määritellään jokaiselle napille funktio
         applybutton.setOnAction(e -> updateImage());
         //Tässä laitetaan importImg:een argumentiksi controls, jotta se näyttäisi kaikki asetukset importin jälkeen.
-        importbutton.setOnAction(e -> importImg(controls));
+        importbutton.setOnAction(e -> importImg(controls, canvasboxmain));
         exportbutton.setOnAction(e -> exportImage());
         pickDir.setOnAction(e -> setDefaultDirectory());
         xor.setOnAction(e -> xor());
@@ -320,14 +369,16 @@ public class ImageMangler extends Application {
         Text bitshiftLabel = new Text("bitshift (left)");
         Text bitshiftRightLabel = new Text("bitshift (right)");
 
-        Scene scene = new Scene(mainbox, 960, 640);
+        Scene scene = new Scene(mainbox, 1400, 640);
         stage.setTitle("ImageMangler");
         mainview.setFitHeight(512);
-        mainview.setFitWidth(512);
+        mainview.setFitWidth(512*ratio);
+
+
 
         TopButtons.getChildren().setAll(addition,subtraction,and,xor);
         BotButtons.getChildren().setAll(invert);
-        Right.getChildren().setAll(logo,importbutton,controls);
+        Right.getChildren().setAll(logo,canvasboxmain ,importbutton,controls);
         bitwise.getChildren().setAll(bitshiftLabel,
                 bitshift,bitshiftRightLabel,
                 bitshiftRight);

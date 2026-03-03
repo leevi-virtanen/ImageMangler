@@ -14,11 +14,36 @@ public class saveFile implements Serializable {
     private String saveDate;
 
 
+    public int getCanvasX() {
+        return canvasX;
+    }
+
+    public void setCanvasX(int canvasX) {
+        this.canvasX = canvasX;
+        FileTool.writeSave(this);
+    }
+
+    public int getCanvasY() {
+        return canvasY;
+    }
+
+    public void setCanvasY(int canvasY) {
+        this.canvasY = canvasY;
+        FileTool.writeSave(this);
+    }
+
+    int canvasX;
+    int canvasY;
+
     public saveFile(File defaultDir) {
         this.defaultDir = defaultDir;
         this.saveDate = LocalDate.now().toString();
+        canvasX = 512;
+        canvasY = 512;
         FileTool.writeSave(this);
     }
+
+
 
     public saveFile() {
         this.defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
