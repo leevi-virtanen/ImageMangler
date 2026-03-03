@@ -25,7 +25,7 @@ import java.io.File;
 public class ImageMangler extends Application {
     private Image img;
     //Käytetään BufferedImagea,jotta voisi pixeli pixeliltä käsitellä kuvaa ja helposti exporttaa ja importtaa
-    private BufferedImage bufimg;
+    public static BufferedImage bufimg;
     //Lopullinen prosessoitu kuva näkyy aina mainviewissä
     private ImageView mainview;
     //Arvo joka lisätään kuvan jokaisen pixelin väriarvoihin
@@ -41,6 +41,7 @@ public class ImageMangler extends Application {
     Tuottaa enemmän artifakteja kuin vasemmalle liikuttaminen.
      */
     private Slider bitshiftRight;
+    public PixelProcessor pixel;
 
 
 
@@ -106,7 +107,8 @@ public class ImageMangler extends Application {
         if(save.getDefaultDir() != null){
             try {
                 java.awt.image.BufferedImage bufimg2 = ImageTool.resize(ImageTool.pickImage(save.getDefaultDir()),canvasSizeX,canvasSizeY);
-                img = ImageTool.getImage(PixelProcessor.imgAdd(bufimg,bufimg2));
+                pixel.imgAdd(bufimg2);
+                img = ImageTool.getImage(bufimg);
                 mainview.setImage(img);
             } catch (Exception e){
                 return null;
@@ -114,7 +116,8 @@ public class ImageMangler extends Application {
         } else{
             try {
                 java.awt.image.BufferedImage bufimg2 = ImageTool.resize(ImageTool.pickImage(),canvasSizeX,canvasSizeY);
-                img = ImageTool.getImage(PixelProcessor.imgAdd(bufimg,bufimg2));
+                pixel.imgAdd(bufimg2);
+                img = ImageTool.getImage(bufimg);
                 mainview.setImage(img);
             } catch (Exception e){
                 return null;
@@ -130,7 +133,8 @@ public class ImageMangler extends Application {
         if(save.getDefaultDir() != null){
             try {
                 java.awt.image.BufferedImage bufimg2 = ImageTool.resize(ImageTool.pickImage(save.getDefaultDir()),canvasSizeX,canvasSizeY);
-                img = ImageTool.getImage(PixelProcessor.imgSubstract(bufimg,bufimg2));
+                pixel.imgSubtract(bufimg2);
+                img = ImageTool.getImage(bufimg);
                 mainview.setImage(img);
             } catch (Exception e) {
                 return null;
@@ -138,7 +142,8 @@ public class ImageMangler extends Application {
         } else {
             try {
                 java.awt.image.BufferedImage bufimg2 = ImageTool.resize(ImageTool.pickImage(),canvasSizeX,canvasSizeY);
-                img = ImageTool.getImage(PixelProcessor.imgSubstract(bufimg,bufimg2));
+                pixel.imgSubtract(bufimg2);
+                img = ImageTool.getImage(bufimg);
                 mainview.setImage(img);
             } catch (Exception e) {
                 return null;
@@ -153,7 +158,8 @@ public class ImageMangler extends Application {
         if(save.getDefaultDir() != null){
             try {
                 java.awt.image.BufferedImage bufimg2 = ImageTool.resize(ImageTool.pickImage(save.getDefaultDir()),canvasSizeX,canvasSizeY);
-                img = ImageTool.getImage(PixelProcessor.imgAnd(bufimg,bufimg2));
+                pixel.imgAnd(bufimg2);
+                img = ImageTool.getImage(bufimg);
                 mainview.setImage(img);
             } catch (Exception e){
                 return null;
@@ -161,7 +167,8 @@ public class ImageMangler extends Application {
         } else{
             try {
                 java.awt.image.BufferedImage bufimg2 = ImageTool.resize(ImageTool.pickImage(),canvasSizeX,canvasSizeY);
-                img = ImageTool.getImage(PixelProcessor.imgAnd(bufimg,bufimg2));
+                pixel.imgAnd(bufimg2);
+                img = ImageTool.getImage(bufimg);
                 mainview.setImage(img);
             } catch (Exception e){
                 return null;
@@ -175,7 +182,8 @@ public class ImageMangler extends Application {
         if(save.getDefaultDir() != null){
             try {
                 java.awt.image.BufferedImage bufimg2 = ImageTool.resize(ImageTool.pickImage(save.getDefaultDir()),canvasSizeX,canvasSizeY);
-                img = ImageTool.getImage(PixelProcessor.imgXor(bufimg,bufimg2));
+                pixel.imgXor(bufimg2);
+                img = ImageTool.getImage(bufimg);
                 mainview.setImage(img);
             } catch (Exception e){
                 return null;
@@ -183,7 +191,8 @@ public class ImageMangler extends Application {
         } else{
             try {
                 java.awt.image.BufferedImage bufimg2 = ImageTool.resize(ImageTool.pickImage(),canvasSizeX,canvasSizeY);
-                img = ImageTool.getImage(PixelProcessor.imgXor(bufimg,bufimg2));
+                pixel.imgXor(bufimg2);
+                img = ImageTool.getImage(bufimg);
                 mainview.setImage(img);
             } catch (Exception e){
                 return null;
@@ -193,7 +202,7 @@ public class ImageMangler extends Application {
     }
 
     public EventHandler<ActionEvent> updateImage(){
-        bufimg = PixelProcessor.changeAll(bufimg,brightness.getValue(),(int)bitshift.getValue(),(int)bitshiftRight.getValue());
+        pixel.changeAll(brightness.getValue(),(int)bitshift.getValue(),(int)bitshiftRight.getValue());
         img = ImageTool.getImage(bufimg);
         mainview.setImage(img);
         return null;
@@ -208,8 +217,9 @@ public class ImageMangler extends Application {
         return null;
     }
 
-    public EventHandler<ActionEvent> invert(){
-        img = ImageTool.getImage(PixelProcessor.invert(bufimg));
+    public EventHandler<ActionEvent> invert() throws InterruptedException {
+        pixel.invert();
+        img = ImageTool.getImage(bufimg);
         mainview.setImage(img);
         return null;
     }
@@ -228,6 +238,7 @@ public class ImageMangler extends Application {
         BotButtons.setAlignment(Pos.CENTER_RIGHT);
         Right.setAlignment(Pos.CENTER_RIGHT);
         mainbox.setPadding(new Insets(50,50,50,50));
+        pixel = new PixelProcessor();
 
         try{
             File savefile = new File("ImgMng.mangle");
@@ -297,7 +308,13 @@ public class ImageMangler extends Application {
         addition.setOnAction(e -> addition());
         subtraction.setOnAction(e -> subtraction());
         and.setOnAction(e -> and());
-        invert.setOnAction(e -> invert());
+        invert.setOnAction(e -> {
+            try {
+                invert();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
 
         Text brightnessLabel = new Text("brightness");
         Text bitshiftLabel = new Text("bitshift (left)");
@@ -305,6 +322,8 @@ public class ImageMangler extends Application {
 
         Scene scene = new Scene(mainbox, 960, 640);
         stage.setTitle("ImageMangler");
+        mainview.setFitHeight(512);
+        mainview.setFitWidth(512);
 
         TopButtons.getChildren().setAll(addition,subtraction,and,xor);
         BotButtons.getChildren().setAll(invert);
